@@ -13,8 +13,7 @@ class Homepage extends StatefulWidget {
 
 class _HomepageState extends State<Homepage> {
   TextEditingController dcontroller = TextEditingController();
-  String definition = "";  // Variable to hold the definition
-  
+
   // Method to fetch data from API
   void getdata() async {
     var url = "https://api.dictionaryapi.dev/api/v2/entries/en/${dcontroller.text}";
@@ -23,15 +22,30 @@ class _HomepageState extends State<Homepage> {
     var response = await http.get(Uri.parse(url));
     if (response.statusCode == 200) {
       var result = houseFromJson(response.body);
-
-      setState(() {
-        // Extracting the definition from the response and updating the state
-        definition = result[0].meanings![0].definitions![0].definition ?? "No definition found";
-      });
+      var definition = result[0].meanings![0].definitions![0].definition ?? "No definition found";
+      var partOfSpeech = result[0].meanings![0].partOfSpeech ?? "No part of speech found";
+      
+      // Navigate to DefinitionPage and pass the data
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => DefinitionPage(
+            definition: definition,
+            partOfSpeech: partOfSpeech,
+          ),
+        ),
+      );
     } else {
-      setState(() {
-        definition = "Failed to fetch definition.";
-      });
+      // Navigate to DefinitionPage with an error message
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => DefinitionPage(
+            definition: "Failed to fetch definition.",
+            partOfSpeech: "N/A",
+          ),
+        ),
+      );
     }
   }
 
@@ -54,14 +68,6 @@ class _HomepageState extends State<Homepage> {
               getdata();
             },
             child: Text("Get Definition"),
-          ),
-          // Displaying the fetched definition
-          Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Text(
-              definition,
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-            ),
           ),
         ],
       ),
